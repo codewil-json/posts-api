@@ -2,16 +2,19 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv').config();
 
-const swaggerUi = require('swagger-ui-express');
-const swaggerSpec = require('./docs/swagger');
+const { apiReference } = require('@scalar/express-api-reference');
+const openApiDocument = require('./docs/openapi');
 
 const app = express();
 
 app.use(express.json());
 app.use(
   '/docs',
-  swaggerUi.serve,
-  swaggerUi.setup(swaggerSpec)
+  apiReference({
+    content: openApiDocument,
+    theme: 'purple',
+    layout: 'modern'
+  })
 );
 
 const PORT = process.env.PORT || 3000;
@@ -78,18 +81,6 @@ const postSchema = new mongoose.Schema(
 const Post = mongoose.model('Post', postSchema, 'posts');
 const memoryPosts = [];
 
-/**
- * @swagger
- * /:
- *   get:
- *     summary: Informações da API
- *     tags:
- *       - API
- *     responses:
- *       200:
- *         description: API online
- */
-
 app.get("/", (req, res) => {
   res.status(200).json({
     service: "CodeWil API",
@@ -111,24 +102,6 @@ app.get("/", (req, res) => {
     }
   });
 });
-
-/**
- * @swagger
- * /posts:
- *   post:
- *     summary: Cria um novo post
- *     tags:
- *       - Posts
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/Post'
- *     responses:
- *       201:
- *         description: Post criado
- */
 
 app.post('/posts', async (req, res) => {
   try {
@@ -155,24 +128,6 @@ app.post('/posts', async (req, res) => {
   }
 });
 
-/**
- * @swagger
- * /posts:
- *   get:
- *     summary: Lista todos os posts
- *     tags:
- *       - Posts
- *     responses:
- *       200:
- *         description: Lista de posts
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Post'
- */
-
 app.get('/posts', async (req, res) => {
   try {
     if (mongoose.connection.readyState === 1) {
@@ -188,30 +143,6 @@ app.get('/posts', async (req, res) => {
     });
   }
 });
-
-/**
- * @swagger
- * /posts/{slug}:
- *   get:
- *     summary: Busca um post por slug
- *     tags:
- *       - Posts
- *     parameters:
- *       - in: path
- *         name: slug
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Post encontrado
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Post'
- *       404:
- *         description: Post não encontrado
- */
 
 app.get('/posts/:slug', async (req, res) => {
   try {
@@ -235,45 +166,6 @@ app.get('/posts/:slug', async (req, res) => {
     });
   }
 });
-
-/**
- * @swagger
- * /posts/{id}:
- *   put:
- *     summary: Atualiza um post
- *     tags:
- *       - Posts
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/Post'
- *     responses:
- *       200:
- *         description: Post atualizado
- *   delete:
- *     summary: Deleta um post
- *     tags:
- *       - Posts
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Post deletado
- *       404:
- *         description: Post não encontrado
- */
 
 app.put('/posts/:id', async (req, res) => {
   try {
