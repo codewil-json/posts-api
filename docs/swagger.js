@@ -1,6 +1,14 @@
 const path = require('path');
 const swaggerJsdoc = require('swagger-jsdoc');
 
+const servers = [];
+
+if (process.env.NODE_ENV === 'production' && process.env.API_URL) {
+  servers.push({ url: process.env.API_URL });
+} else {
+  servers.push({ url: 'http://localhost:3000' });
+}
+
 const options = {
   definition: {
     openapi: '3.0.0',
@@ -9,14 +17,7 @@ const options = {
       version: '1.0.0',
       description: 'API oficial da CodeWil'
     },
-    servers: [
-      {
-        url: 'https://api.codewil.site'
-      },
-      {
-        url: 'http://localhost:3000'
-      }
-    ],
+    servers,
     components: {
       schemas: {
         Post: {
