@@ -70,12 +70,24 @@ const postSchema = new mongoose.Schema(
 const Post = mongoose.model('Post', postSchema, 'posts');
 const memoryPosts = [];
 
-app.get('/', (req, res) => {
-  res.json({
-    message: 'API pronta para receber posts com Mongoose.',
+app.get("/", (req, res) => {
+  res.status(200).json({
+    service: "CodeWil API",
+    description: "REST API powering the CodeWil website.",
+    status: "healthy",
+    version: "1.0.0",
+    uptime: `${Math.floor(process.uptime())}s`,
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV,
+    documentation: "https://api.codewil.site/docs",
     endpoints: {
-      createPost: 'POST /posts',
-      listPosts: 'GET /posts'
+      posts: {
+        list: "GET /posts",
+        get: "GET /posts/:slug",
+        create: "POST /posts",
+        update: "PUT /posts/:id",
+        delete: "DELETE /posts/:id"
+      }
     }
   });
 });
