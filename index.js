@@ -165,6 +165,12 @@ app.post('/posts', async (req, res) => {
  *     responses:
  *       200:
  *         description: Lista de posts
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Post'
  */
 
 app.get('/posts', async (req, res) => {
@@ -178,6 +184,130 @@ app.get('/posts', async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       message: 'Erro ao buscar posts.',
+      error: error.message
+    });
+  }
+});
+
+/**
+ * @swagger
+ * /posts/{slug}:
+ *   get:
+ *     summary: Busca um post por slug
+ *     tags:
+ *       - Posts
+ *     parameters:
+ *       - in: path
+ *         name: slug
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Post encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Post'
+ *       404:
+ *         description: Post não encontrado
+ */
+
+app.get('/posts/:slug', async (req, res) => {
+  try {
+    if (mongoose.connection.readyState === 1) {
+      const post = await Post.findOne({ slug: req.params.slug });
+      if (!post) {
+        return res.status(404).json({ message: 'Post não encontrado.' });
+      }
+      return res.json(post);
+    }
+
+    const post = memoryPosts.find(p => p.slug === req.params.slug);
+    if (!post) {
+      return res.status(404).json({ message: 'Post não encontrado.' });
+    }
+    return res.json(post);
+  } catch (error) {
+    return res.status(500).json({
+      message: 'Erro ao buscar post.',
+      error: error.message
+    });
+  }
+});
+
+/**
+ * @swagger
+ * /posts/{id}:
+ *   put:
+ *     summary: Atualiza um post
+ *     tags:
+ *       - Posts
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Post'
+ *     responses:
+ *       200:
+ *         description: Post atualizado
+ *   delete:
+ *     summary: Deleta um post
+ *     tags:
+ *       - Posts
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Post deletado
+ *       404:
+ *         description: Post não encontrado
+ */
+
+app.put('/posts/:id', async (req, res) => {
+  try {
+    if (mongoose.connection.readyState === 1) {
+      const post = await Post.findByIdAndUpdate(req.params.id, req.body, { new: true });
+      if (!post) {
+        return res.status(404).json({ message: 'Post não encontrado.' });
+      }
+      return res.json(post);
+    }
+
+    return res.status(503).json({ message: 'Banco de dados indisponível.' });
+  } catch (error) {
+    return res.status(400).json({
+      message: 'Erro ao atualizar post.',
+      error: error.message
+    });
+  }
+});
+
+app.delete('/posts/:id', async (req, res) => {
+  try {
+    if (mongoose.connection.readyState === 1) {
+      const post = await Post.findByIdAndDelete(req.params.id);
+      if (!post) {
+        return res.status(404).json({ message: 'Post não encontrado.' });
+      }
+      return res.json({ message: 'Post deletado com sucesso.' });
+    }
+
+    return res.status(503).json({ message: 'Banco de dados indisponível.' });
+  } catch (error) {
+    return res.status(400).json({
+      message: 'Erro ao deletar post.',
       error: error.message
     });
   }
