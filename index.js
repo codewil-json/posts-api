@@ -2,9 +2,17 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv').config();
 
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./docs/swagger');
+
 const app = express();
 
 app.use(express.json());
+app.use(
+  '/docs',
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec)
+);
 
 const PORT = process.env.PORT || 3000;
 const MONGODB_URI = (() => {
@@ -70,6 +78,18 @@ const postSchema = new mongoose.Schema(
 const Post = mongoose.model('Post', postSchema, 'posts');
 const memoryPosts = [];
 
+/**
+ * @swagger
+ * /:
+ *   get:
+ *     summary: Informações da API
+ *     tags:
+ *       - API
+ *     responses:
+ *       200:
+ *         description: API online
+ */
+
 app.get("/", (req, res) => {
   res.status(200).json({
     service: "CodeWil API",
@@ -91,6 +111,24 @@ app.get("/", (req, res) => {
     }
   });
 });
+
+/**
+ * @swagger
+ * /posts:
+ *   post:
+ *     summary: Cria um novo post
+ *     tags:
+ *       - Posts
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Post'
+ *     responses:
+ *       201:
+ *         description: Post criado
+ */
 
 app.post('/posts', async (req, res) => {
   try {
@@ -116,6 +154,18 @@ app.post('/posts', async (req, res) => {
     });
   }
 });
+
+/**
+ * @swagger
+ * /posts:
+ *   get:
+ *     summary: Lista todos os posts
+ *     tags:
+ *       - Posts
+ *     responses:
+ *       200:
+ *         description: Lista de posts
+ */
 
 app.get('/posts', async (req, res) => {
   try {
