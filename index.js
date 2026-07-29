@@ -1,21 +1,21 @@
+const express = require('express');
+const mongoose = require('mongoose');
+const dotenv = require('dotenv').config();
+
+// const { apiReference } = require('@scalar/express-api-reference');
+// const openApiDocument = require('./docs/openapi');
+
 const app = express();
 
 app.use(express.json());
-
-const openApiDocument = require('./docs/openapi');
-
-async function setupDocs() {
-  const { apiReference } = await import('@scalar/express-api-reference');
-
-  app.use(
-    '/docs',
-    apiReference({
-      content: openApiDocument,
-      theme: 'purple',
-      layout: 'modern'
-    })
-  );
-}
+// app.use(
+//   '/docs',
+//   apiReference({
+//     content: openApiDocument,
+//     theme: 'purple',
+//     layout: 'modern'
+//   })
+// );
 
 const PORT = process.env.PORT || 3000;
 const MONGODB_URI = (() => {
@@ -206,19 +206,11 @@ app.delete('/posts/:id', async (req, res) => {
 });
 
 async function startServer() {
-  await setupDocs();
-
   try {
-    await mongoose.connect(MONGODB_URI, {
-      serverSelectionTimeoutMS: 2000
-    });
-
+    await mongoose.connect(MONGODB_URI, { serverSelectionTimeoutMS: 2000 });
     console.log('Conectado ao MongoDB');
   } catch (error) {
-    console.warn(
-      'MongoDB indisponível, utilizando armazenamento temporário em memória.',
-      error.message
-    );
+    console.warn('MongoDB indisponível, utilizando armazenamento temporário em memória.', error.message);
   }
 
   app.listen(PORT, () => {
