@@ -1,21 +1,82 @@
+const fs = require('fs');
+const path = require('path');
+const { marked } = require('marked');
+
 const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv').config();
 
-// const { apiReference } = require('@scalar/express-api-reference');
-// const openApiDocument = require('./docs/openapi');
-
 const app = express();
 
 app.use(express.json());
-// app.use(
-//   '/docs',
-//   apiReference({
-//     content: openApiDocument,
-//     theme: 'purple',
-//     layout: 'modern'
-//   })
-// );
+
+app.get('/docs', (req, res) => {
+  const file = path.join(__dirname, 'docs', 'api.md');
+
+  const markdown = fs.readFileSync(file, 'utf8');
+  const html = marked(markdown);
+
+  res.send(`
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>CodeWil API Docs</title>
+
+<style>
+
+body{
+    font-family:Inter,Arial,sans-serif;
+    max-width:1000px;
+    margin:auto;
+    padding:40px;
+    background:#0f172a;
+    color:#f8fafc;
+    line-height:1.7;
+}
+
+h1,h2,h3{
+    color:#38bdf8;
+}
+
+code{
+    background:#1e293b;
+    padding:2px 6px;
+    border-radius:4px;
+}
+
+pre{
+    background:#020617;
+    padding:18px;
+    overflow:auto;
+    border-radius:8px;
+}
+
+a{
+    color:#38bdf8;
+}
+
+table{
+    border-collapse:collapse;
+}
+
+td,th{
+    border:1px solid #334155;
+    padding:8px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+${html}
+
+</body>
+</html>
+`);
+});
 
 const PORT = process.env.PORT || 3000;
 const MONGODB_URI = (() => {
